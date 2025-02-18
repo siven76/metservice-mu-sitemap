@@ -30,8 +30,8 @@ async function proxyRequest(request) {
 
 // Function to generate the sitemap correctly
 async function generateSitemap() {
-    const baseUrl = "https://metservice.mu"; // Your new domain
-    const originalDomain = "http://metservice.intnet.mu"; // Old domain
+    const baseUrl = "https://www.metservice.mu";
+    const originalDomain = "http://metservice.intnet.mu";
     const pagesToCrawl = ["/"]; // Start with the homepage
     const crawledPages = new Set();
     let sitemapEntries = [];
