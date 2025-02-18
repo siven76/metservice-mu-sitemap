@@ -1,0 +1,4 @@
+name = "metservice-mu-sitemap"
+
+[observability.logs]
+enabled = true
