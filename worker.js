@@ -28,9 +28,10 @@ async function proxyRequest(request) {
     return response;
 }
 
-// Function to generate the sitemap
+// Function to generate the sitemap correctly
 async function generateSitemap() {
-    const baseUrl = "https://metservice.mu";
+    const baseUrl = "https://metservice.mu"; // Your new domain
+    const originalDomain = "http://metservice.intnet.mu"; // Old domain
     const pagesToCrawl = ["/"]; // Start with the homepage
     const crawledPages = new Set();
     let sitemapEntries = [];
@@ -40,7 +41,7 @@ async function generateSitemap() {
         if (crawledPages.has(path)) continue;
 
         crawledPages.add(path);
-        const pageUrl = `${baseUrl}${path}`;
+        const pageUrl = `${originalDomain}${path}`;
 
         try {
             const response = await fetch(pageUrl);
@@ -51,17 +52,22 @@ async function generateSitemap() {
                 const links = [...html.matchAll(/href="([^"#]+)"/g)].map(m => m[1]);
 
                 for (let link of links) {
-                    if (!link.startsWith("http")) {
-                        link = new URL(link, baseUrl).pathname; // Convert relative to absolute paths
-                    }
+                    if (link.startsWith("mailto:") || link.startsWith("tel:")) continue; // Ignore mail/phone links
+                    
+                    // Convert relative URLs to absolute ones
+                    let absoluteLink = link.startsWith("http") ? link : new URL(link, originalDomain).href;
 
-                    if (!crawledPages.has(link) && !link.includes("mailto:") && !link.includes("tel:")) {
-                        pagesToCrawl.push(link);
+                    // Ensure it's not external
+                    if (absoluteLink.includes(originalDomain) && !crawledPages.has(absoluteLink)) {
+                        pagesToCrawl.push(new URL(absoluteLink).pathname);
                     }
                 }
             }
 
-            sitemapEntries.push(`<url><loc>${pageUrl}</loc><lastmod>${new Date().toISOString()}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
+            // Convert URLs to the new domain
+            let convertedUrl = pageUrl.replace(originalDomain, baseUrl);
+
+            sitemapEntries.push(`<url><loc>${convertedUrl}</loc><lastmod>${new Date().toISOString()}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>`);
         } catch (error) {
             console.error(`Failed to fetch: ${pageUrl}`, error);
         }
